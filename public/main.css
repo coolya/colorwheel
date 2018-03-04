@@ -1,0 +1,13 @@
+.wheel {
+    display: flex;
+}
+
+.wheel > div {
+    height: 50px;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.wheel > div.primary {
+    height: 80px;
+}
