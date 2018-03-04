@@ -196,7 +196,7 @@ sB = var_B * 255
 *)
 
 let mutable colors: Color list = [RGB(217, 64, 37); RGB(203, 232, 143); RGB(183, 206, 228)]
-
+let inputs = Browser.document.getElementsByClassName("color-input")
 let mutable renderer = fun () -> ()
 
 let parseColor (raw:string) =
@@ -212,18 +212,7 @@ let parseColor (raw:string) =
     RGB(r, g, b)
 
 
-let refresh() =
-    let inputs = Browser.document.getElementsByClassName("primary")
-    let length = inputs.length |> int
-    let mutable newColors: Color list = List.empty
-    for i in 0..length - 1  do
-        let input = inputs.[i].getElementsByTagName_input().[0]
-        let value = input.value
-        newColors <- (parseColor value) :: newColors
 
-    colors <- newColors |> List.rev
-    renderer()
-    null
 
 let toHex color =
     let rgb = toRgb color
@@ -233,24 +222,36 @@ let toHex color =
 
 
 let createColorDiv color =
-    let (color, css, disabled) =
+    let (color, css) =
         match color with
-        | Primary c -> (toHex c), "primary", false
-        | Filled c -> (toHex c), "filled", true
+        | Primary c -> (toHex c), "primary"
+        | Filled c -> (toHex c), "filled"
     let div = Browser.document.createElement_div()
-    let txtBox = Browser.document.createElement_input()
-    txtBox.value <- color
-    txtBox.disabled <- disabled
-    txtBox.addEventListener_blur (fun _ -> refresh())
     div.className <- css
     div.style.backgroundColor <- color
-    div.appendChild(txtBox) |> ignore
     div
+let refresh() =
+    let length = inputs.length |> int
+    let mutable newColors: Color list = List.empty
+    for i in 0..length - 1  do
+        let input = inputs.[i] :?> Browser.HTMLInputElement
+        let value = input.value
+        newColors <- (parseColor value) :: newColors
 
+    colors <- newColors |> List.rev
+
+    let colorDivs = Browser.document.getElementsByClassName("color")
+
+    colors |> List.iteri (fun i e ->
+        let element = colorDivs.[i] :?> Browser.HTMLDivElement
+        element.style.background <- e |> toHex)
+
+    renderer()
+    null
 
 let render() =
 
-    let pointsBetween = List.init 3 (fun i -> i + 3)
+    let pointsBetween = List.init 3 (fun i -> 5)
 
     let zipped = colors |> List.zip pointsBetween
 
@@ -287,6 +288,19 @@ let render() =
     let div = Browser.document.getElementById "wheel" :?> Browser.HTMLDivElement
     div.innerHTML <- ""
     result |> List.map createColorDiv |> List.iter (fun it -> div.appendChild(it) |> ignore)
+
+
+
+for i in 0..((inputs.length |> int) - 1) do
+    let element = inputs.[i] :?> Browser.HTMLInputElement
+    element.addEventListener_blur (fun _ -> refresh())
+    element.value <- colors |> List.item i |> toHex
+
+let colorDivs = Browser.document.getElementsByClassName("color")
+
+colors |> List.iteri (fun i e ->
+    let element = colorDivs.[i] :?> Browser.HTMLDivElement
+    element.style.background <- e |> toHex)
 
 
 renderer <- render
