@@ -17,6 +17,7 @@ type Results =
     | Filled of Color
 
 
+
 let refX = 95.047
 let refY = 100.
 let refZ = 108.883
@@ -194,9 +195,60 @@ sB = var_B * 255
 
 *)
 
-let init() =
+let mutable colors: Color list = [RGB(217, 64, 37); RGB(203, 232, 143); RGB(183, 206, 228)]
 
-    let colors: Color list  = [RGB(103, 203, 0); RGB(203, 232 ,143); RGB(183, 206, 228)]
+let mutable renderer = fun () -> ()
+
+let parseColor (raw:string) =
+    let s =
+        match raw.StartsWith("#") with
+        | x when x -> raw.Substring(1)
+        | _ -> raw
+    let convert (x:string) = System.Convert.ToInt32(x, 16)
+    let r = s.Substring(0, 2) |> convert
+    let g = s.Substring(2, 2) |> convert
+    let b = s.Substring(4, 2) |> convert
+
+    RGB(r, g, b)
+
+
+let refresh() =
+    let inputs = Browser.document.getElementsByClassName("primary")
+    let length = inputs.length |> int
+    let mutable newColors: Color list = List.empty
+    for i in 0..length - 1  do
+        let input = inputs.[i].getElementsByTagName_input().[0]
+        let value = input.value
+        newColors <- (parseColor value) :: newColors
+
+    colors <- newColors |> List.rev
+    renderer()
+    null
+
+let toHex color =
+    let rgb = toRgb color
+    match rgb with
+    | RGB(r, g, b) -> sprintf "#%X%X%X" r g b
+    | _ -> failwith "shit happended"
+
+
+let createColorDiv color =
+    let (color, css, disabled) =
+        match color with
+        | Primary c -> (toHex c), "primary", false
+        | Filled c -> (toHex c), "filled", true
+    let div = Browser.document.createElement_div()
+    let txtBox = Browser.document.createElement_input()
+    txtBox.value <- color
+    txtBox.disabled <- disabled
+    txtBox.addEventListener_blur (fun _ -> refresh())
+    div.className <- css
+    div.style.backgroundColor <- color
+    div.appendChild(txtBox) |> ignore
+    div
+
+
+let render() =
 
     let pointsBetween = List.init 3 (fun i -> i + 3)
 
@@ -227,40 +279,15 @@ let init() =
             let n = num |> float
 
             let producer (i: int) =
-                let i = i |> float
+                let i = i + 1 |> float
                 Filled (LAB(l + (dL / n) * i, a + (dA / n) * i, b + (dB /n) * i))
             Primary(LAB(l, a, b)) :: List.init num producer
         )
         |> List.collect id
-
-    printfn "%A" result
-
-    let canvas = Browser.document.getElementsByTagName_canvas().[0]
-    canvas.width <- 1000.
-    canvas.height <- 800.
-    let ctx = canvas.getContext_2d()
-    // The (!^) operator checks and casts a value to an Erased Union type
-    // See http://fable.io/docs/interacting.html#Erase-attribute
+    let div = Browser.document.getElementById "wheel" :?> Browser.HTMLDivElement
+    div.innerHTML <- ""
+    result |> List.map createColorDiv |> List.iter (fun it -> div.appendChild(it) |> ignore)
 
 
-    result |> List.iteri(fun i it ->
-        let (r, g, b) =
-            let rgb c =
-                match (c |> toRgb) with
-                | RGB(r, g, b) -> (r, g, b)
-                | _ -> failwith "should not happen"
-
-            match it with
-            //| _ -> (0,0,0)
-            | Primary c -> c |> rgb
-            | Filled c -> c |> rgb
-        let colorStr = sprintf "rgb(%d,%d,%d)" r g b
-        ctx.fillStyle <- !^colorStr
-        let height =
-            match it with
-            | Primary _ -> 50.
-            | _ -> 30.
-        ctx.fillRect (35. * (i |> float), 10., 30., height)
-    )
-
-init()
+renderer <- render
+render()
