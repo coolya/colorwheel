@@ -200,7 +200,22 @@ sB = var_B * 255
 
 *)
 
-let mutable colors: Color list = [RGB(217, 64, 37); RGB(203, 232, 143); RGB(183, 206, 228)]
+
+
+let save (data:Color list) =
+    let arr = Array.ofList data
+    Browser.localStorage.setItem("colors", JS.JSON.stringify arr)
+
+let load =
+    Browser.localStorage.getItem("colors") |> unbox
+    |> Option.map (JS.JSON.parse >> unbox)
+    |> Option.map List.ofArray
+    |> Option.defaultValue [RGB(217, 64, 37); RGB(203, 232, 143); RGB(183, 206, 228)]
+    //[RGB(217, 64, 37); RGB(203, 232, 143); RGB(183, 206, 228)]
+
+
+let mutable colors: Color list = load
+
 let inputs = Browser.document.getElementsByClassName("color-input")
 
 let rgbInputs = [
@@ -308,6 +323,7 @@ let refresh from =
         element.style.background <- e |> toHex)
 
     renderer()
+    save colors
     null
 
 let render() =
