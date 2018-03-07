@@ -1,19 +1,7 @@
-/*.wheel {
-    display: flex;
-    height: 800px;
-}*/
-/*.wheel > div {
-    height: 50px;
-    width: 20px;
-    margin-left: 5px;
-    margin-right: 5px;
-}*/
-.wheel > div > input {
-  display: none; }
+@import url("https://fonts.googleapis.com/css?family=Montserrat");
+body {
+  font-family: 'Montserrat', sans-serif; }
 
-/*.wheel > div.primary {
-    height: 80px;
-}*/
 .wheel {
   position: relative;
   width: 25em;
@@ -73,8 +61,39 @@
     .wheel > *:nth-of-type(18) {
       transform: rotate(340deg) translate(12.5em); }
 
-#entry-box > div > div {
-  height: 30px;
-  width: 30px; }
+input[type=text] {
+  border: unset;
+  font-weight: bolder; }
+
+input:focus {
+  outline: none; }
+
+#entry-box {
+  margin-left: 30px; }
+  #entry-box > div {
+    width: 180px;
+    overflow: hidden; }
+  #entry-box .color-input {
+    width: 55px; }
+  #entry-box > div > div {
+    width: 60px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    float: left; }
+  #entry-box label {
+    margin-left: 5px;
+    margin-right: 5px;
+    font-size: 9px; }
+    #entry-box label:first-child {
+      margin-right: 7px; }
+  #entry-box > div > div:last-child {
+    display: inline-block;
+    width: 60px; }
+    #entry-box > div > div:last-child input {
+      width: 30px; }
+
+#entry-box .color {
+  height: 60px;
+  width: 60px; }
 
 /*# sourceMappingURL=main.css.map */

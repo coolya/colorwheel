@@ -1,24 +1,7 @@
-/*.wheel {
-    display: flex;
-    height: 800px;
-}*/
-
-/*.wheel > div {
-    height: 50px;
-    width: 20px;
-    margin-left: 5px;
-    margin-right: 5px;
-}*/
-
-.wheel > div > input {
-    display: none;
+@import url('https://fonts.googleapis.com/css?family=Montserrat');
+body {
+    font-family: 'Montserrat', sans-serif;
 }
-
-
-/*.wheel > div.primary {
-    height: 80px;
-}*/
-
 
 /// Mixin to place items on a circle
 /// @author Hugo Giraudel
@@ -73,7 +56,50 @@
     transform: rotate(-90deg);
 }
 
-#entry-box > div > div {
-    height: 30px;
-    width: 30px;
+input[type=text] {
+    border: unset;
+    font-weight: bolder;
+}
+
+input:focus{
+    outline: none;
+}
+
+
+#entry-box {
+    margin-left: 30px;
+    & > div {
+        width: 180px;
+        overflow: hidden;
+    }
+    .color-input {
+        width: 55px;
+    }
+    & > div > div {
+        width: 60px;
+        margin-top: 5px;
+        margin-bottom: 5px;
+        float:left;
+    }
+    label {
+        margin-left: 5px;
+        margin-right: 5px;
+        font-size: 9px;
+        &:first-child {
+            margin-right: 7px;
+        }
+    }
+
+    & > div > div:last-child {
+        display:inline-block;
+        width: 60px;
+        input {
+            width: 30px;
+        }
+    }
+}
+#entry-box .color {
+    height: 60px;
+    width: 60px;
+
 }

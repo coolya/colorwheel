@@ -4,6 +4,8 @@ open Fable.Core
 open Fable.Core.JsInterop
 open Fable.Import
 
+open System
+
 
 type Color =
     | RGB of int * int * int
@@ -17,6 +19,9 @@ type Results =
     | Filled of Color
 
 
+type RefreshFrom =
+    | HexBox
+    | RGBBox
 
 let refX = 95.047
 let refY = 100.
@@ -197,6 +202,19 @@ sB = var_B * 255
 
 let mutable colors: Color list = [RGB(217, 64, 37); RGB(203, 232, 143); RGB(183, 206, 228)]
 let inputs = Browser.document.getElementsByClassName("color-input")
+
+let rgbInputs = [
+    Browser.document.getElementById("input-r-color-one") :?> Browser.HTMLInputElement
+    Browser.document.getElementById("input-g-color-one") :?> Browser.HTMLInputElement
+    Browser.document.getElementById("input-b-color-one") :?> Browser.HTMLInputElement
+    Browser.document.getElementById("input-r-color-two") :?> Browser.HTMLInputElement
+    Browser.document.getElementById("input-g-color-two") :?> Browser.HTMLInputElement
+    Browser.document.getElementById("input-b-color-two") :?> Browser.HTMLInputElement
+    Browser.document.getElementById("input-r-color-three") :?> Browser.HTMLInputElement
+    Browser.document.getElementById("input-g-color-three") :?> Browser.HTMLInputElement
+    Browser.document.getElementById("input-b-color-three") :?> Browser.HTMLInputElement
+]
+
 let mutable renderer = fun () -> ()
 
 let parseColor (raw:string) =
@@ -230,15 +248,59 @@ let createColorDiv color =
     div.className <- css
     div.style.backgroundColor <- color
     div
-let refresh() =
+
+let updateColorBoxes () =
+    for i in 0..((inputs.length |> int) - 1) do
+        let element = inputs.[i] :?> Browser.HTMLInputElement
+        element.value <- colors |> List.item i |> toHex
+
+
+let updateRgbBoxes () =
+    rgbInputs |> List.iteri (fun i input ->
+        let color = List.item (i / 3) colors |> toRgb
+        let actualR, actualG, actualB =
+                        match color with
+                        | RGB (r, g, b) -> r, g, b
+                        | _ -> failwith "should never happen"
+        printfn "%d" i
+        match i % 3 with
+        | 0 -> input.value <- string actualR
+        | 1 -> input.value <- string actualG
+        | 2 -> input.value <- string actualB
+    )
+
+let refresh from =
     let length = inputs.length |> int
     let mutable newColors: Color list = List.empty
-    for i in 0..length - 1  do
-        let input = inputs.[i] :?> Browser.HTMLInputElement
-        let value = input.value
-        newColors <- (parseColor value) :: newColors
 
-    colors <- newColors |> List.rev
+    match from with
+    | HexBox ->
+        for i in 0..length - 1  do
+            let input = inputs.[i] :?> Browser.HTMLInputElement
+            let value = input.value
+            newColors <- (parseColor value) :: newColors
+        newColors <-  newColors |> List.rev
+    | RGBBox ->
+        newColors <-
+            [0..2]
+            |> List.map (fun i ->
+                printfn "%d" i
+                let toSkip = i * 3
+                let elements =
+                    rgbInputs
+                    |> List.skip toSkip
+                    |> List.take 3
+                    |> List.map (fun it -> Int32.Parse it.value)
+                let r = elements |> List.item 0
+                let g = elements |> List.item 1
+                let b = elements |> List.item 2
+                RGB(r, g, b)
+            )
+
+    colors <- newColors
+
+    updateRgbBoxes()
+    updateColorBoxes()
 
     let colorDivs = Browser.document.getElementsByClassName("color")
 
@@ -291,10 +353,29 @@ let render() =
 
 
 
+
+
 for i in 0..((inputs.length |> int) - 1) do
     let element = inputs.[i] :?> Browser.HTMLInputElement
-    element.addEventListener_blur (fun _ -> refresh())
+    element.addEventListener_blur (fun _ -> refresh HexBox)
     element.value <- colors |> List.item i |> toHex
+
+
+rgbInputs |> List.iteri (fun i input ->
+    let color = List.item (i / 3) colors |> toRgb
+    let actualR, actualG, actualB =
+                    match color with
+                    | RGB (r, g, b) -> r, g, b
+                    | _ -> failwith "should never happen"
+
+    match i % 3 with
+    | 0 -> input.value <- string actualR
+    | 1 -> input.value <- string actualG
+    | 2 -> input.value <- string actualB
+
+    input.addEventListener_blur(fun _ -> refresh RGBBox)
+)
+
 
 let colorDivs = Browser.document.getElementsByClassName("color")
 
