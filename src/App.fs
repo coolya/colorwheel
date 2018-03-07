@@ -356,6 +356,7 @@ let render() =
 for i in 0..((inputs.length |> int) - 1) do
     let element = inputs.[i] :?> Browser.HTMLInputElement
     element.addEventListener_blur (fun _ -> refresh HexBox)
+    element.addEventListener_submit (fun _ -> refresh HexBox)
     element.addEventListener_change (fun _ -> refresh HexBox)
     element.value <- colors |> List.item i |> toHex
 
@@ -373,6 +374,7 @@ rgbInputs |> List.iteri (fun i input ->
     | 2 -> input.value <- string actualB
 
     input.addEventListener_blur(fun _ -> refresh RGBBox)
+    input.addEventListener_submit(fun _ -> refresh RGBBox)
     input.addEventListener_change(fun _ -> refresh RGBBox)
 )
 
