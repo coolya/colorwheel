@@ -262,7 +262,6 @@ let updateRgbBoxes () =
                         match color with
                         | RGB (r, g, b) -> r, g, b
                         | _ -> failwith "should never happen"
-        printfn "%d" i
         match i % 3 with
         | 0 -> input.value <- string actualR
         | 1 -> input.value <- string actualG
@@ -338,7 +337,6 @@ let render() =
                 c - o
             let (dL, dA, dB) = (calcDistance opL l, calcDistance opA a, calcDistance opB b)
 
-            printfn "color: %A; oponent: %A; distance: %A" (l, a, b) (opL, opA, opB) (dL, dA, dB)
             let n = num |> float
 
             let producer (i: int) =
@@ -358,6 +356,7 @@ let render() =
 for i in 0..((inputs.length |> int) - 1) do
     let element = inputs.[i] :?> Browser.HTMLInputElement
     element.addEventListener_blur (fun _ -> refresh HexBox)
+    element.addEventListener_change (fun _ -> refresh HexBox)
     element.value <- colors |> List.item i |> toHex
 
 
@@ -374,6 +373,7 @@ rgbInputs |> List.iteri (fun i input ->
     | 2 -> input.value <- string actualB
 
     input.addEventListener_blur(fun _ -> refresh RGBBox)
+    input.addEventListener_change(fun _ -> refresh RGBBox)
 )
 
 
